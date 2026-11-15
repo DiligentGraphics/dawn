@@ -3542,8 +3542,11 @@ class Parser {
         TINT_ASSERT(img_type);
         TINT_ASSERT(img_type->GetMultisampled() != type::Multisampled::kMultisampled)
             << "Creating an OpTypeSampledImage from a multisampled image is not supported";
+        // Vulkan allows the SPIR-V result image type to differ from the operand in Depth.
+        // Match the operand type in Tint IR; texture lowering infers depth/comparison usage
+        // from the sampling operations.
         Emit(b_.CallExplicit<spirv::ir::BuiltinCall>(
-                 Type(inst.type_id()), spirv::BuiltinFn::kOpSampledImage,
+                 ty_.Get<type::SampledImage>(img_type), spirv::BuiltinFn::kOpSampledImage,
                  Vector<core::ir::TemplateParameter, 1>{tex->Type()}, Args(inst, 2)),
              inst.result_id());
     }
